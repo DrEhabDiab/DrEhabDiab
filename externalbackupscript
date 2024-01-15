@@ -1,0 +1,79 @@
+Here is the User Guide for our External Backup Bash Script:
+
+1- Verifying External Backup Configuration on Your Server:
+To confirm that the External Backup has been successfully added and activated on your server, use the following command:
+
+```
+# df -h | grep -E 'Filesystem|backup'
+```
+
+This command should return the backup path and display its size details. An example output is as follows:
+
+```
+Filesystem                           Size  Used Avail Use% Mounted on
+//u382815.your-storagebox.de/backup  100G   67G   34G  67% /mnt/backup-server
+```
+
+2- Schedule and Location of External Backups:
+
+The External Backup script is programmed to run four times daily, every six hours, at the following times: 00:00, 06:00, 12:00, and 18:00.
+Each run creates a full, standalone copy of the backup. You can locate these four backup instances in the following directory:
+
+```
+# ls /mnt/backup-server
+```
+
+The output will list the backup directories, typically named as 'First', 'Second', 'Third', and 'Fourth'.
+
+3- Structure of Backup Directories:
+
+Each backup directory contains three subdirectories:
+
+databases: This contains a .sql backup of each database on the server.
+files: This includes a complete copy of the public_html directory for each account on the server.
+sqldir: This holds a full copy of the /var/lib/mysql path.
+
+4- Restoring a Backup:
+
+To restore a backup, for example, the second backup of user 'alyazedi', follow these steps:
+
+Databases:
+
+To list available database backups for the user 'alyazedi':
+
+```
+ls -la /mnt/backup-server/Second/databases/alyazedi_*.sql
+```
+
+To restore a specific database, for example, alyazedi_a2wp144.sql, use:
+
+```
+mysql alyazedi_a2wp144 < /mnt/backup-server/Second/databases/alyazedi_a2wp144.sql
+```
+
+Please note, this restoration process is irreversible.
+
+Files:
+
+To restore public_html files:
+
+4.1- Rename the current public_html directory:
+
+```
+mv /home/alyazedi/public_html /home/alyazedi/public_html-OLD
+```
+
+4.2 Copy the backup files to the desired location:
+
+```
+cp -R /mnt/backup-server/Second/files/alyazedi/public_html /home/alyazedi/
+```
+
+4.3 Set the appropriate ownership and permissions:
+
+```
+chown -R alyazedi:alyazedi /home/alyazedi/public_html/
+chmod 755 /home/alyazedi/public_html/
+```
+
+Please follow these instructions carefully to ensure effective backup management and restoration.
